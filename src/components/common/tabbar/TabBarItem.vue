@@ -13,12 +13,12 @@ export default {
     path:String,
     activeColor:{
     type:String,
-    default:'red'
+    // default:'red'
     }
   },
   data() {
     return {
-      isActive,
+      // isActive,
     }
   },
   methods:{

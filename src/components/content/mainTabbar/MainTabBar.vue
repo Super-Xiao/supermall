@@ -1,7 +1,7 @@
 <template>
-  <tab-bar>
+  <tab-bar >
       <tab-bar-item path = "/home" activeColor = "deeppink">
-        <img slot="item-icon" src="../../../assets/img/tabbar/home_active.svg" alt="">
+        <img slot="item-icon" src="../../../assets/img/tabbar/home.svg" alt="">
         <img slot="item-icon-active" src="../../../assets/img/tabbar/home_active.svg" alt="">
         <div slot="item-text">首页</div>
       </tab-bar-item >
@@ -25,8 +25,8 @@
 </template>
 
 <script>
-import TabBar from '../components/tabbar/TabBar.vue'
-import TabBarItem from '../components/tabbar/TabBarItem.vue'
+import TabBar from '../../../components/common/tabbar/TabBar.vue'
+import TabBarItem from '../../../components/common/tabbar/TabBarItem.vue'
 export default {
   name:'MainTabBar',
   components:{
