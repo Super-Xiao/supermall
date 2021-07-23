@@ -5,7 +5,13 @@
       @titleClick="titleClick"
       ref="nav"
     ></detail-nav-bar>
-    <scroll class="content-c" ref="scrolla" :probeType="3" @scroll="contentScroll">
+    <scroll
+      class="content-c"
+      ref="scrolla"
+      :probeType="3"
+      @scroll="contentScroll"
+    >
+
       <detail-swiper :top-images="topImages"></detail-swiper>
       <detail-base-info :goods="goods" ref="baseinfo" />
       <detail-shop-info :shop="shop" ref="shopinfo" />
@@ -18,7 +24,10 @@
       <detail-comment-info :comment-info="commentInfo" ref="comment" />
       <goods-list :goods="recommends" ref="recommends" />
     </scroll>
-    <detail-bottom-bar/>
+    <detail-bottom-bar @addCart="addToCart"/>
+    <back-top @click.native="backClick" v-show="isShowBackTop" ></back-top>
+    <!-- <toast :message="message" :show="show"></toast> -->
+
   </div>
 </template>
 
@@ -30,10 +39,14 @@ import DetailShopInfo from "../detail/childComps/DetailShopInfo.vue";
 import DetailGoodsInfo from "../detail/childComps/DetailGoodsInfo.vue";
 import DetailParamInfo from "../detail/childComps/DetailParamInfo.vue";
 import DetailCommentInfo from "../detail/childComps/DetailCommentInfo.vue";
-import DetailBottomBar from "../detail/childComps/DetailBottomBar.vue"
+import DetailBottomBar from "../detail/childComps/DetailBottomBar.vue";
 
 import Scroll from "../../components/common/scroll/Scroll.vue";
 import GoodsList from "../../components/content/goods/GoodsList.vue";
+import BackTop from "../../components/content/backTop/BackTop.vue";
+// import Toast from "../../components/common/toast/Toast.vue"
+
+import {mapActions} from 'vuex'
 
 import {
   getDetail,
@@ -56,6 +69,8 @@ export default {
     DetailCommentInfo,
     GoodsList,
     DetailBottomBar,
+    BackTop,
+    // Toast,
   },
   data() {
     return {
@@ -68,7 +83,11 @@ export default {
       commentInfo: {},
       recommends: [],
       themeTopYs: [],
-      currentIndex:0,
+      currentIndex: 0,
+      isShowBackTop: false,
+      // count:0,
+      // message:'',
+      // show:false,
     };
   },
 
@@ -81,18 +100,20 @@ export default {
   //   });
   // },
   methods: {
-    debounce(func, delay) {
-      let timer = null;
-      return function () {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-          func();
-        }, delay);
-      };
-    },
-    mounted() {
-      // this.$refs.scrolla.refresh()
-    },
+    ...mapActions(['addCart']),
+    // ...mapActions({
+    //   add:'addCart'
+    // }),
+
+    // debounce(func, delay) {
+    //   let timer = null;
+    //   return function () {
+    //     if (timer) clearTimeout(timer);
+    //     timer = setTimeout(() => {
+    //       func();
+    //     }, delay);
+    //   };
+    // },
     imageLoad() {
       this.$refs.scrolla.refresh();
       // console.log(1);
@@ -109,24 +130,65 @@ export default {
       this.themeTopYs.push(this.$refs.recommends.$el.offsetTop);
       console.log(this.themeTopYs);
       // const param = this.$refs.param.$el.offsetTop
-
     },
     titleClick(index) {
       // console.log(index);
       this.$refs.scrolla.scrollTo(0, -this.themeTopYs[index], 100);
-
     },
-    contentScroll(position){
+    contentScroll(position) {
       // console.log(position);
-      const positionY = -position.y
-      let length = this.themeTopYs.length
-      for(let i =0;i<length;i++){
-        if(this.currentIndex !== i &&((i<length-1 && positionY>=this.themeTopYs[i] &&positionY<this.themeTopYs[i+1] ||(i ===length-1 && positionY>=this.themeTopYs[i])))){
-          this.currentIndex = i
+      const positionY = -position.y;
+      let length = this.themeTopYs.length;
+      for (let i = 0; i < length; i++) {
+        if (
+          this.currentIndex !== i &&
+          ((i < length - 1 &&
+            positionY >= this.themeTopYs[i] &&
+            positionY < this.themeTopYs[i + 1]) ||
+            (i === length - 1 && positionY >= this.themeTopYs[i]))
+        ) {
+          this.currentIndex = i;
           // console.log(this.currentIndex);
-          this.$refs.nav.currentIndex = this.currentIndex
+          this.$refs.nav.currentIndex = this.currentIndex;
         }
       }
+      // 判断backTop是否显示
+      this.isShowBackTop = -position.y > 1000;
+    },
+    backClick() {
+      this.$refs.scrolla.scrollTo(0, 0, 400);
+    },
+    addToCart(){
+      // console.log(1);
+      // 获取购物车需要展示的信息
+      const product = {}
+      product.image = this.topImages[0]
+      product.title = this.goods.title
+      product.desc = this.goods.desc
+      product.price = this.goods.realPrice
+      product.iid = this.iid
+      // product.count = this.count
+      // console.log(product);
+
+      // 将商品添加到购物车里
+      // this.$store.commit('addCart',product)
+
+      this.addCart(product).then((res)=>{
+        // this.show = true
+        // this.message = res
+
+        // setTimeout(()=>{
+        //   this.show = false
+        //   this.message = ''
+        // },1500)
+        // console.log(res);
+        // console.log($toast);
+        this.$toast.show(res,2000)
+      })
+
+      // this.$store.dispatch('addCart',product).then(res=>{
+      //   console.log(res);
+      // })
 
     }
   },
@@ -172,7 +234,7 @@ export default {
       // console.log(this.recommends);
     });
     // this.$nextTick(()=>{
-      // 值不对，因为图片没有计算在内
+    // 值不对，因为图片没有计算在内
     //   this.themeTopYs = []
     //   this.themeTopYs.push(0);
     //   this.themeTopYs.push(this.$refs.param.$el.offsetTop);
@@ -191,13 +253,11 @@ export default {
   z-index: 9;
   background-color: #fff;
   height: 100vh;
-
 }
 .detail-nav {
   position: relative;
   z-index: 9;
   background-color: #fff;
-
 }
 .content-c {
   /* height: calc(100% - 44px); */
@@ -209,4 +269,5 @@ export default {
   right: 0;
   margin-bottom: 58px;
 }
+
 </style>

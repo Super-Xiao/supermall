@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="right">
-      <div class="cart">加入购物车</div>
+      <div class="cart" @click="addToCart">加入购物车</div>
       <div class="buy">购买</div>
     </div>
   </div>
@@ -25,8 +25,10 @@
   export default {
     name: "DetailBottomBar",
     methods: {
-      addCart() {
+      addToCart() {
+        // console.log(1);
         this.$emit('addCart')
+        // console.log(this.$store.state.carList);
       }
     }
   }
